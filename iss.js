@@ -43,4 +43,27 @@ const fetchCoordsByIP = (IP, done) => {
   });
 };
 
-module.exports = { fetchMyIP, fetchCoordsByIP };
+const fetchIISFlyOverTimes = (coordinates, done) => {
+  request(`http://api.open-notify.org/iss-pass.json?lat=${coordinates.latitude}&lon=${coordinates.longitude}`, (err, response, body) => {
+
+    const data = JSON.parse(body).response[0];
+
+    if (err) {
+      done(err, null);
+      return;
+    }
+
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode} when fetching coordinates. Response: ${body}`;
+      done(Error(msg), null);
+      return;
+    }
+
+    const flyOverTime = { risetime: data.risetime, duration: data.duration };
+    done(null, flyOverTime);
+
+  });
+
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIP, fetchIISFlyOverTimes };
