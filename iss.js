@@ -44,9 +44,7 @@ const fetchCoordsByIP = (IP, done) => {
 };
 
 const fetchIISFlyOverTimes = (coordinates, done) => {
-  request(`http://api.open-notify.org/iss-pass.json?lat=${coordinates.latitude}&lon=${coordinates.longitude}`, (err, response, body) => {
-
-    const data = JSON.parse(body).response[0];
+  request(`http://api.open-notify.org/iss-pass.json?lat=${coordinates.latitude}&lon=${coordinates.longitude}&n=5`, (err, response, body) => {
 
     if (err) {
       done(err, null);
@@ -59,11 +57,29 @@ const fetchIISFlyOverTimes = (coordinates, done) => {
       return;
     }
 
-    const flyOverTime = { risetime: data.risetime, duration: data.duration };
+    const flyOverTime = JSON.parse(body).response;
     done(null, flyOverTime);
 
   });
 
 };
 
-module.exports = { fetchMyIP, fetchCoordsByIP, fetchIISFlyOverTimes };
+const nextISSTimesForMyLocation = (done) => {
+
+  fetchMyIP((err, IP) => {
+    if (err) return done(err, null);
+
+    fetchCoordsByIP(IP, (err, coordinates) => {
+      if (err) return done(err, null);
+
+      fetchIISFlyOverTimes(coordinates, (err, flyOverTime) => {
+        if (err) return done(err, null);
+
+          done(err, flyOverTime);
+
+      });
+    });
+  });
+};
+
+module.exports = { nextISSTimesForMyLocation };
